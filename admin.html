@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Consorcio Legal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { background-color: #f4f6f9; font-family: sans-serif; }
+        .login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0a0a0a; z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 10px;
+            text-align: center; width: 350px;
+        }
+        .admin-header { background: #0a0a0a; color: #d4af37; padding: 20px; }
+        .card { border: none; shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <h3>Admin Access</h3>
+            <p class="text-muted">Ingrese contraseña</p>
+            <input type="password" id="adminPass" class="form-control mb-3" placeholder="Contraseña">
+            <button class="btn btn-dark w-100" onclick="checkLogin()">Entrar</button>
+            <small class="d-block mt-3 text-danger" id="loginError" style="display:none!important;"></small>
+        </div>
+    </div>
+
+    <div id="dashboard" style="display:none;">
+        <header class="admin-header d-flex justify-content-between align-items-center">
+            <h2 class="m-0"><i class="fas fa-cogs"></i> Panel de Control</h2>
+            <button class="btn btn-outline-warning btn-sm" onclick="logout()">Cerrar Sesión</button>
+        </header>
+
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card p-4 mb-4">
+                        <h4>Gestión de Ramos</h4>
+                        <form id="serviceForm" onsubmit="saveService(event)">
+                            <input type="hidden" id="serviceId"> <div class="mb-3">
+                                <label>Título del Servicio</label>
+                                <input type="text" id="svcTitle" class="form-control" required placeholder="Ej: Derecho Penal">
+                            </div>
+                            <div class="mb-3">
+                                <label>Descripción Breve</label>
+                                <textarea id="svcDesc" class="form-control" required placeholder="Descripción..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label>Icono (FontAwesome)</label>
+                                <select id="svcIcon" class="form-control">
+                                    <option value="fa-gavel">Mazo (Legal)</option>
+                                    <option value="fa-scale-balanced">Balanza</option>
+                                    <option value="fa-building">Edificio (Corporativo)</option>
+                                    <option value="fa-users">Usuarios (Familiar)</option>
+                                    <option value="fa-handshake">Apretón de manos</option>
+                                    <option value="fa-file-contract">Contrato</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100" id="btnSave">Agregar Servicio</button>
+                            <button type="button" class="btn btn-secondary w-100 mt-2" onclick="resetForm()" style="display:none;" id="btnCancel">Cancelar Edición</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="card p-4">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h4>Servicios Activos</h4>
+                            <input type="text" id="searchInput" class="form-control w-50" placeholder="Buscar servicio..." onkeyup="renderTable()">
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Icono</th>
+                                        <th>Título</th>
+                                        <th>Descripción</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="servicesTableBody">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <strong>Instrucciones:</strong> Los cambios realizados aquí se guardan automáticamente en el navegador. Recarga la página <code>index.html</code> para ver los cambios reflejados.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGICA DE ADMINISTRACIÓN ---
+
+        // 1. LOGIN
+        function checkLogin() {
+            const pass = document.getElementById('adminPass').value;
+            if(pass === 'admin') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                renderTable();
+            } else {
+                const err = document.getElementById('loginError');
+                err.style.display = 'block';
+                err.innerText = 'Contraseña incorrecta';
+            }
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        // 2. GESTIÓN DE DATOS (CRUD LOCALSTORAGE)
+        const STORAGE_KEY = 'abogadoServices';
+
+        function getServices() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveServices(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            renderTable();
+        }
+
+        // 3. RENDERIZAR TABLA Y BÚSQUEDA
+        function renderTable() {
+            const services = getServices();
+            const tbody = document.getElementById('servicesTableBody');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            tbody.innerHTML = '';
+
+            services.forEach((svc, index) => {
+                // Filtro de búsqueda
+                if(svc.title.toLowerCase().includes(search) || svc.desc.toLowerCase().includes(search)) {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><i class="fas ${svc.icon} fa-2x text-warning"></i></td>
+                            <td><strong>${svc.title}</strong></td>
+                            <td>${svc.desc}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="editService(${index})"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteService(${index})"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+
+        // 4. CREAR O ACTUALIZAR
+        function saveService(e) {
+            e.preventDefault();
+            const id = document.getElementById('serviceId').value;
+            const title = document.getElementById('svcTitle').value;
+            const desc = document.getElementById('svcDesc').value;
+            const icon = document.getElementById('svcIcon').value;
+            
+            let services = getServices();
+
+            if(id !== "") {
+                // Editar existente
+                services[id] = { title, desc, icon };
+                alert("Servicio actualizado correctamente");
+            } else {
+                // Agregar nuevo
+                services.push({ title, desc, icon });
+                alert("Servicio agregado");
+            }
+
+            saveServices(services);
+            resetForm();
+        }
+
+        // 5. ELIMINAR
+        function deleteService(index) {
+            if(confirm("¿Estás seguro de eliminar este servicio?")) {
+                let services = getServices();
+                services.splice(index, 1);
+                saveServices(services);
+            }
+        }
+
+        // 6. PREPARAR EDICIÓN
+        function editService(index) {
+            let services = getServices();
+            const svc = services[index];
+
+            document.getElementById('serviceId').value = index;
+            document.getElementById('svcTitle').value = svc.title;
+            document.getElementById('svcDesc').value = svc.desc;
+            document.getElementById('svcIcon').value = svc.icon;
+
+            document.getElementById('btnSave').innerText = "Actualizar";
+            document.getElementById('btnSave').classList.remove('btn-success');
+            document.getElementById('btnSave').classList.add('btn-primary');
+            document.getElementById('btnCancel').style.display = 'block';
+        }
+
+        function resetForm() {
+            document.getElementById('serviceForm').reset();
+            document.getElementById('serviceId').value = "";
+            document.getElementById('btnSave').innerText = "Agregar Servicio";
+            document.getElementById('btnSave').classList.add('btn-success');
+            document.getElementById('btnSave').classList.remove('btn-primary');
+            document.getElementById('btnCancel').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
