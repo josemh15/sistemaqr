@@ -1,223 +1,760 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Consorcio Legal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        body { background-color: #f4f6f9; font-family: sans-serif; }
-        .login-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #0a0a0a; z-index: 2000;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .login-box {
-            background: white; padding: 40px; border-radius: 10px;
-            text-align: center; width: 350px;
-        }
-        .admin-header { background: #0a0a0a; color: #d4af37; padding: 20px; }
-        .card { border: none; shadow: 0 5px 15px rgba(0,0,0,0.05); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin · Consorcio Legal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#07090D;--ink2:#0F1318;--ink3:#161B23;--ink4:#1E2530;--gold:#C49A3C;--gold2:#E8C265;--gold3:#8A6A20;--ivory:#F0EAD6;--ivory2:#C8BFA8;--white:#FFF;--gray:#6B7280;--gray2:#9CA3AF;--green:#10B981;--red:#F43F5E;--border:rgba(196,154,60,.16);--border2:rgba(255,255,255,.06);--ff-d:'Cormorant Garamond',serif;--ff-b:'Epilogue',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--ff-b);background:var(--ink);color:var(--ivory)}
+
+/* ── Login ─────────────────────────────────── */
+#login{position:fixed;inset:0;z-index:9000;background:var(--ink);display:flex;align-items:center;justify-content:center}
+.login-wrap{width:100%;max-width:400px;padding:24px}
+.login-logo{font-family:var(--ff-d);font-size:clamp(22px,4vw,30px);font-weight:600;letter-spacing:.2em;color:var(--gold);text-align:center;margin-bottom:8px}
+.login-sub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray2);text-align:center;margin-bottom:40px}
+.login-card{background:var(--ink2);border:1px solid var(--border);padding:40px 36px}
+.login-label{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold3);font-weight:600;display:block;margin-bottom:8px}
+.login-input{width:100%;background:var(--ink);border:1px solid var(--border);padding:13px 16px;color:var(--ivory);font-family:var(--ff-b);font-size:14px;outline:none;margin-bottom:20px;transition:border-color .3s}
+.login-input:focus{border-color:var(--gold)}
+.login-btn{width:100%;background:var(--gold);color:var(--ink);border:none;padding:14px;font-family:var(--ff-b);font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;cursor:pointer;transition:all .3s;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+.login-btn:hover{background:var(--gold2)}
+.login-err{color:var(--red);font-size:12px;text-align:center;margin-top:12px;display:none}
+.login-hint{font-size:11px;color:var(--gray);text-align:center;margin-top:16px}
+
+/* ── Layout ────────────────────────────────── */
+#app{display:none;height:100%;flex-direction:row}
+.sidebar{width:220px;flex-shrink:0;background:var(--ink2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-compact{width:220px;transition:width .25s}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:56px;background:var(--ink2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;gap:12px}
+.content{flex:1;overflow-y:auto;padding:28px}
+
+/* ── Sidebar ───────────────────────────────── */
+.sb-logo{padding:20px 18px;border-bottom:1px solid var(--border)}
+.sb-logo-t{font-family:var(--ff-d);font-size:17px;font-weight:600;letter-spacing:.16em;color:var(--gold);white-space:nowrap}
+.sb-logo-s{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--gray);white-space:nowrap}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.sb-sec{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--gray);padding:14px 8px 6px;font-weight:600}
+.nb{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--gray2);font-size:13px;font-weight:500;transition:all .15s;border:none;background:none;width:100%;text-align:left;white-space:nowrap}
+.nb:hover{background:rgba(196,154,60,.07);color:var(--ivory)}
+.nb.a{background:rgba(196,154,60,.12);color:var(--gold)}
+.nb-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nb .badge_{margin-left:auto;font-size:9px;background:var(--red);color:#fff;border-radius:10px;padding:2px 6px;font-weight:700}
+.sb-bottom{padding:12px 10px;border-top:1px solid var(--border)}
+
+/* ── Topbar ────────────────────────────────── */
+.tb-title{font-family:var(--ff-d);font-size:18px;font-weight:600;color:var(--white)}
+.tb-right{display:flex;align-items:center;gap:12px}
+.tb-site{font-size:11px;color:var(--gray2);padding:6px 14px;border:1px solid var(--border);text-decoration:none;transition:all .3s;display:flex;align-items:center;gap:6px}
+.tb-site:hover{border-color:var(--gold);color:var(--gold)}
+.tb-user{font-size:12px;font-weight:600;color:var(--ivory2);padding:6px 14px;background:var(--ink3);border:1px solid var(--border)}
+.tb-logout{font-size:11px;font-weight:600;color:var(--red);background:none;border:1px solid rgba(244,63,94,.25);padding:6px 14px;cursor:pointer;transition:all .3s}
+.tb-logout:hover{background:rgba(244,63,94,.08)}
+
+/* ── Sections ──────────────────────────────── */
+.sec{display:none}
+.sec.a{display:block}
+
+/* ── Cards / KPIs ──────────────────────────── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:24px}
+.kpi-card{background:var(--ink2);border:1px solid var(--border);padding:20px 18px}
+.kpi-val{font-family:var(--ff-d);font-size:32px;font-weight:600;color:var(--gold);line-height:1}
+.kpi-label{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--gray2);margin-top:4px}
+.kpi-card.green .kpi-val{color:var(--green)}
+.kpi-card.red .kpi-val{color:var(--red)}
+
+/* ── Panel card ────────────────────────────── */
+.panel{background:var(--ink2);border:1px solid var(--border);overflow:hidden}
+.panel-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.panel-title{font-family:var(--ff-d);font-size:17px;font-weight:600;color:var(--white)}
+.panel-body{padding:20px}
+
+/* ── Table ─────────────────────────────────── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;font-weight:600}
+.tbl td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;color:var(--ivory);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(196,154,60,.03)}
+
+/* ── Form elements ─────────────────────────── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{margin-bottom:14px}
+.fl{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--gold3);font-weight:600;display:block;margin-bottom:6px}
+.fi{width:100%;background:var(--ink);border:1px solid var(--border);padding:10px 13px;color:var(--ivory);font-family:var(--ff-b);font-size:13px;outline:none;transition:border-color .3s}
+.fi:focus{border-color:var(--gold)}
+.fi::placeholder{color:var(--gray)}
+textarea.fi{resize:vertical;min-height:80px}
+select.fi option{background:var(--ink2)}
+.btn-g{background:var(--gold);color:var(--ink);border:none;padding:9px 20px;font-family:var(--ff-b);font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:7px}
+.btn-g:hover{background:var(--gold2)}
+.btn-s{background:var(--ink3);color:var(--ivory2);border:1px solid var(--border);padding:9px 18px;font-family:var(--ff-b);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:7px}
+.btn-s:hover{background:var(--ink4);color:var(--ivory)}
+.btn-d{background:rgba(244,63,94,.1);color:var(--red);border:1px solid rgba(244,63,94,.2);padding:9px 18px;font-family:var(--ff-b);font-size:11px;font-weight:600;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:7px}
+.btn-d:hover{background:rgba(244,63,94,.18)}
+.btn-sm{padding:6px 12px!important;font-size:10px!important}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
+/* ── Badges ────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;letter-spacing:.05em}
+.bg-new{background:rgba(244,63,94,.12);color:var(--red)}
+.bg-read{background:rgba(16,185,129,.1);color:var(--green)}
+.bg-role{background:rgba(196,154,60,.12);color:var(--gold)}
+
+/* ── Modal ─────────────────────────────────── */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:800;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;visibility:hidden;transition:all .25s}
+.modal-ov.show{opacity:1;visibility:visible}
+.modal-box{background:var(--ink2);border:1px solid var(--border);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;transform:translateY(16px);transition:transform .25s}
+.modal-ov.show .modal-box{transform:translateY(0)}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--ff-d);font-size:18px;font-weight:600;color:var(--white)}
+.modal-close{background:none;border:none;color:var(--gray2);font-size:18px;cursor:pointer;transition:color .2s;line-height:1}
+.modal-close:hover{color:var(--gold)}
+.modal-body{padding:22px}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+/* ── Toast ─────────────────────────────────── */
+#toast{position:fixed;bottom:24px;right:24px;z-index:999;font-size:13px;font-weight:600;padding:12px 20px;border-left:2px solid var(--gold);background:var(--ink2);color:var(--ivory);transform:translateY(60px);opacity:0;transition:all .35s;pointer-events:none;max-width:280px}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.err{border-color:var(--red)}
+#toast.ok{border-color:var(--green)}
+
+/* ── Inbox message ─────────────────────────── */
+.msg-card{background:var(--ink);border:1px solid var(--border);padding:16px 18px;cursor:pointer;transition:border-color .2s}
+.msg-card:hover{border-color:var(--gold)}
+.msg-card.unread{border-left:2px solid var(--gold)}
+.msg-name{font-weight:600;font-size:14px;color:var(--white)}
+.msg-area{font-size:11px;color:var(--gold3);letter-spacing:.1em;text-transform:uppercase;margin:3px 0}
+.msg-preview{font-size:12px;color:var(--gray2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-date{font-size:10px;color:var(--gray);margin-top:4px}
+.empty-state{text-align:center;padding:48px 24px;color:var(--gray2)}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.empty-text{font-size:13px}
+
+/* ── Settings tabs ─────────────────────────── */
+.set-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.set-tab{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gray2);padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;margin-bottom:-1px;background:none;border-left:none;border-right:none;border-top:none}
+.set-tab.a{color:var(--gold);border-bottom-color:var(--gold)}
+.set-panel{display:none}.set-panel.a{display:block}
+
+/* ── Scrollbar ─────────────────────────────── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--ink4);border-radius:3px}
+
+/* ── Responsive ────────────────────────────── */
+@media(max-width:768px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:400;transform:translateX(-100%);transition:transform .25s;width:220px!important}
+  .sidebar.mob-open{transform:translateX(0)}
+  .mob-sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:390}
+  .mob-sb-ov.show{display:block}
+  .content{padding:16px}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  #app{flex-direction:column}
+}
+</style>
 </head>
 <body>
 
-    <div id="loginOverlay" class="login-overlay">
-        <div class="login-box">
-            <h3>Admin Access</h3>
-            <p class="text-muted">Ingrese contraseña</p>
-            <input type="password" id="adminPass" class="form-control mb-3" placeholder="Contraseña">
-            <button class="btn btn-dark w-100" onclick="checkLogin()">Entrar</button>
-            <small class="d-block mt-3 text-danger" id="loginError" style="display:none!important;"></small>
-        </div>
+<!-- Login -->
+<div id="login">
+  <div class="login-wrap">
+    <div class="login-logo">⚖ CONSORCIO LEGAL</div>
+    <div class="login-sub">Panel de Administración</div>
+    <div class="login-card">
+      <label class="login-label">Contraseña de acceso</label>
+      <input type="password" class="login-input" id="lp" placeholder="••••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="login-btn" onclick="doLogin()">Ingresar al panel</button>
+      <div class="login-err" id="lerr">Contraseña incorrecta. Intenta de nuevo.</div>
+      <div class="login-hint">¿Necesitas ayuda? Contacta a tu administrador.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Modal overlay -->
+<div class="modal-ov" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Modal</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<!-- Mobile sidebar overlay -->
+<div class="mob-sb-ov" id="mob-ov" onclick="closeMobSb()"></div>
+
+<!-- App -->
+<div id="app" style="display:none;height:100%">
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sb">
+    <div class="sb-logo">
+      <div class="sb-logo-t">Consorcio Legal</div>
+      <div class="sb-logo-s">Panel Admin</div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-sec">Principal</div>
+      <button class="nb a" onclick="go('dash',this)"><span class="nb-icon">📊</span>Dashboard</button>
+      <button class="nb" onclick="go('msgs',this)"><span class="nb-icon">✉️</span>Mensajes<span class="badge_" id="msg-badge" style="display:none">0</span></button>
+      <div class="sb-sec">Contenido</div>
+      <button class="nb" onclick="go('svcs',this)"><span class="nb-icon">⚖</span>Servicios</button>
+      <button class="nb" onclick="go('team',this)"><span class="nb-icon">👥</span>Equipo</button>
+      <button class="nb" onclick="go('test',this)"><span class="nb-icon">💬</span>Testimonios</button>
+      <div class="sb-sec">Sistema</div>
+      <button class="nb" onclick="go('set',this)"><span class="nb-icon">⚙</span>Configuración</button>
+      <button class="nb" onclick="go('sec',this)"><span class="nb-icon">🔒</span>Seguridad</button>
+    </div>
+    <div class="sb-bottom">
+      <a href="consorcio_index.html" target="_blank" class="nb" style="color:var(--gold3);font-size:12px;text-decoration:none">
+        <span class="nb-icon">🌐</span>Ver sitio web →
+      </a>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button onclick="toggleMobSb()" style="display:none;background:none;border:1px solid var(--border);color:var(--ivory2);padding:6px 10px;cursor:pointer;font-size:14px" id="mob-menu-btn">☰</button>
+        <div class="tb-title" id="tb-title">Dashboard</div>
+      </div>
+      <div class="tb-right">
+        <a href="consorcio_index.html" target="_blank" class="tb-site">🌐 <span class="hidden-sm">Ver sitio</span></a>
+        <div class="tb-user" id="tb-user">Admin</div>
+        <button class="tb-logout" onclick="doLogout()">Salir</button>
+      </div>
     </div>
 
-    <div id="dashboard" style="display:none;">
-        <header class="admin-header d-flex justify-content-between align-items-center">
-            <h2 class="m-0"><i class="fas fa-cogs"></i> Panel de Control</h2>
-            <button class="btn btn-outline-warning btn-sm" onclick="logout()">Cerrar Sesión</button>
-        </header>
+    <!-- Content -->
+    <div class="content">
 
-        <div class="container py-5">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card p-4 mb-4">
-                        <h4>Gestión de Ramos</h4>
-                        <form id="serviceForm" onsubmit="saveService(event)">
-                            <input type="hidden" id="serviceId"> <div class="mb-3">
-                                <label>Título del Servicio</label>
-                                <input type="text" id="svcTitle" class="form-control" required placeholder="Ej: Derecho Penal">
-                            </div>
-                            <div class="mb-3">
-                                <label>Descripción Breve</label>
-                                <textarea id="svcDesc" class="form-control" required placeholder="Descripción..."></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label>Icono (FontAwesome)</label>
-                                <select id="svcIcon" class="form-control">
-                                    <option value="fa-gavel">Mazo (Legal)</option>
-                                    <option value="fa-scale-balanced">Balanza</option>
-                                    <option value="fa-building">Edificio (Corporativo)</option>
-                                    <option value="fa-users">Usuarios (Familiar)</option>
-                                    <option value="fa-handshake">Apretón de manos</option>
-                                    <option value="fa-file-contract">Contrato</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-success w-100" id="btnSave">Agregar Servicio</button>
-                            <button type="button" class="btn btn-secondary w-100 mt-2" onclick="resetForm()" style="display:none;" id="btnCancel">Cancelar Edición</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="col-md-8">
-                    <div class="card p-4">
-                        <div class="d-flex justify-content-between mb-3">
-                            <h4>Servicios Activos</h4>
-                            <input type="text" id="searchInput" class="form-control w-50" placeholder="Buscar servicio..." onkeyup="renderTable()">
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Icono</th>
-                                        <th>Título</th>
-                                        <th>Descripción</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="servicesTableBody">
-                                    </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="alert alert-info mt-4">
-                <strong>Instrucciones:</strong> Los cambios realizados aquí se guardan automáticamente en el navegador. Recarga la página <code>index.html</code> para ver los cambios reflejados.
-            </div>
-        </div>
+<!-- ══ DASHBOARD ══ -->
+<div id="s-dash" class="sec a">
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-val" id="kd-msgs">0</div><div class="kpi-label">Mensajes nuevos</div></div>
+    <div class="kpi-card"><div class="kpi-val" id="kd-total">0</div><div class="kpi-label">Total mensajes</div></div>
+    <div class="kpi-card"><div class="kpi-val" id="kd-svcs">0</div><div class="kpi-label">Servicios activos</div></div>
+    <div class="kpi-card"><div class="kpi-val" id="kd-team">0</div><div class="kpi-label">Miembros del equipo</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px">
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Últimos mensajes</div><button class="btn-s btn-sm" onclick="go('msgs',null)">Ver todos</button></div>
+      <div class="panel-body" id="dash-msgs-list"></div>
     </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Accesos rápidos</div></div>
+      <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn-g" style="justify-content:center" onclick="openSvcModal()">+ Nuevo servicio</button>
+        <button class="btn-g" style="justify-content:center;background:var(--ink3);color:var(--ivory)" onclick="openTeamModal()">+ Nuevo miembro</button>
+        <button class="btn-s" style="justify-content:center" onclick="go('set',null)">⚙ Configuración</button>
+        <a href="consorcio_index.html" target="_blank" class="btn-s" style="justify-content:center;text-decoration:none">🌐 Ver sitio web</a>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <script>
-        // --- LOGICA DE ADMINISTRACIÓN ---
+<!-- ══ MENSAJES ══ -->
+<div id="s-msgs" class="sec">
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Bandeja de mensajes</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-s btn-sm" onclick="markAllRead()">✓ Marcar todos leídos</button>
+        <button class="btn-d btn-sm" onclick="clearAllMsgs()">🗑 Limpiar todo</button>
+      </div>
+    </div>
+    <div class="panel-body" id="msgs-list"></div>
+  </div>
+</div>
 
-        // 1. LOGIN
-        function checkLogin() {
-            const pass = document.getElementById('adminPass').value;
-            if(pass === 'admin') {
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                renderTable();
-            } else {
-                const err = document.getElementById('loginError');
-                err.style.display = 'block';
-                err.innerText = 'Contraseña incorrecta';
-            }
-        }
+<!-- ══ SERVICIOS ══ -->
+<div id="s-svcs" class="sec">
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Áreas de Práctica</div>
+      <button class="btn-g btn-sm" onclick="openSvcModal()">+ Nuevo servicio</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Emoji</th><th>Título</th><th>Descripción</th><th style="width:120px">Acciones</th></tr></thead>
+        <tbody id="svcs-tbody"></tbody>
+      </table>
+    </div>
+    <div style="padding:16px 20px;border-top:1px solid var(--border)">
+      <button class="btn-d btn-sm" onclick="resetSvcs()">↺ Restaurar servicios por defecto</button>
+    </div>
+  </div>
+</div>
 
-        function logout() {
-            location.reload();
-        }
+<!-- ══ EQUIPO ══ -->
+<div id="s-team" class="sec">
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Miembros del Equipo</div>
+      <button class="btn-g btn-sm" onclick="openTeamModal()">+ Nuevo miembro</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Iniciales</th><th>Nombre</th><th>Cargo</th><th>Biografía</th><th style="width:120px">Acciones</th></tr></thead>
+        <tbody id="team-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-        // 2. GESTIÓN DE DATOS (CRUD LOCALSTORAGE)
-        const STORAGE_KEY = 'abogadoServices';
+<!-- ══ TESTIMONIOS ══ -->
+<div id="s-test" class="sec">
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Testimonios de Clientes</div>
+      <button class="btn-g btn-sm" onclick="openTestModal()">+ Nuevo testimonio</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Testimonio</th><th>Autor</th><th>Empresa/Ciudad</th><th style="width:120px">Acciones</th></tr></thead>
+        <tbody id="test-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-        function getServices() {
-            const data = localStorage.getItem(STORAGE_KEY);
-            return data ? JSON.parse(data) : [];
-        }
+<!-- ══ CONFIGURACIÓN ══ -->
+<div id="s-set" class="sec">
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Configuración del Sitio</div></div>
+    <div class="panel-body">
+      <div class="set-tabs">
+        <button class="set-tab a" onclick="setTab('general',this)">General</button>
+        <button class="set-tab" onclick="setTab('contact',this)">Contacto</button>
+        <button class="set-tab" onclick="setTab('social',this)">Redes sociales</button>
+      </div>
+      <div id="st-general" class="set-panel a">
+        <div class="form-grid">
+          <div class="fg"><label class="fl">Nombre de la firma</label><input class="fi" id="s-name" placeholder="Consorcio Legal"></div>
+          <div class="fg"><label class="fl">Años de experiencia</label><input class="fi" id="s-years" type="number" placeholder="26"></div>
+        </div>
+        <div class="fg"><label class="fl">Tagline / Descripción corta</label><input class="fi" id="s-tagline" placeholder="Excelencia jurídica con compromiso humano."></div>
+        <div class="fg"><label class="fl">Texto "Sobre nosotros" (párrafo principal)</label><textarea class="fi" id="s-about" rows="4"></textarea></div>
+      </div>
+      <div id="st-contact" class="set-panel">
+        <div class="form-grid">
+          <div class="fg"><label class="fl">Ubicación / Dirección</label><input class="fi" id="s-loc" placeholder="Torre Legal, Piso 12, CDMX"></div>
+          <div class="fg"><label class="fl">Teléfono / WhatsApp</label><input class="fi" id="s-phone" placeholder="+52 55 1234 5678"></div>
+          <div class="fg"><label class="fl">Correo electrónico</label><input class="fi" id="s-email" placeholder="contacto@firma.mx"></div>
+          <div class="fg"><label class="fl">Número WhatsApp (solo dígitos)</label><input class="fi" id="s-wa" placeholder="525512345678"></div>
+        </div>
+      </div>
+      <div id="st-social" class="set-panel">
+        <div class="form-grid">
+          <div class="fg"><label class="fl">Facebook URL</label><input class="fi" id="s-fb" placeholder="https://facebook.com/..."></div>
+          <div class="fg"><label class="fl">Instagram URL</label><input class="fi" id="s-ig" placeholder="https://instagram.com/..."></div>
+          <div class="fg"><label class="fl">LinkedIn URL</label><input class="fi" id="s-li" placeholder="https://linkedin.com/..."></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-g" onclick="saveSettings()">✓ Guardar configuración</button>
+        <button class="btn-s" onclick="loadSettings()">↺ Recargar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        function saveServices(data) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            renderTable();
-        }
+<!-- ══ SEGURIDAD ══ -->
+<div id="s-sec" class="sec">
+  <div class="panel" style="max-width:520px">
+    <div class="panel-head"><div class="panel-title">Cambiar contraseña</div></div>
+    <div class="panel-body">
+      <div class="fg"><label class="fl">Contraseña actual</label><input type="password" class="fi" id="sec-cur" placeholder="••••••••"></div>
+      <div class="fg"><label class="fl">Nueva contraseña</label><input type="password" class="fi" id="sec-new" placeholder="••••••••"></div>
+      <div class="fg"><label class="fl">Confirmar nueva contraseña</label><input type="password" class="fi" id="sec-con" placeholder="••••••••"></div>
+      <div class="btn-row">
+        <button class="btn-g" onclick="changePass()">✓ Actualizar contraseña</button>
+      </div>
+      <div id="sec-msg" style="font-size:12px;margin-top:12px;display:none"></div>
+    </div>
+  </div>
+  <div class="panel" style="max-width:520px;margin-top:16px">
+    <div class="panel-head"><div class="panel-title">Zona de peligro</div></div>
+    <div class="panel-body">
+      <p style="font-size:13px;color:var(--gray2);margin-bottom:16px">Estas acciones son irreversibles. Procede con precaución.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-d" onclick="dangerClearMsgs()">🗑 Borrar todos los mensajes</button>
+        <button class="btn-d" onclick="dangerResetAll()">↺ Resetear todo el contenido</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        // 3. RENDERIZAR TABLA Y BÚSQUEDA
-        function renderTable() {
-            const services = getServices();
-            const tbody = document.getElementById('servicesTableBody');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            
-            tbody.innerHTML = '';
+    </div><!-- end content -->
+  </div><!-- end main -->
+</div><!-- end app -->
 
-            services.forEach((svc, index) => {
-                // Filtro de búsqueda
-                if(svc.title.toLowerCase().includes(search) || svc.desc.toLowerCase().includes(search)) {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><i class="fas ${svc.icon} fa-2x text-warning"></i></td>
-                            <td><strong>${svc.title}</strong></td>
-                            <td>${svc.desc}</td>
-                            <td>
-                                <button class="btn btn-sm btn-primary" onclick="editService(${index})"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteService(${index})"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                }
-            });
-        }
+<script>
+// ═══════════════════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════════════════
+const SK={sv:'cl_services',tm:'cl_team',ts:'cl_testimonials',ms:'cl_messages',st:'cl_settings'};
+const lg=(k,d)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d}catch{return d}};
+const ls=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 
-        // 4. CREAR O ACTUALIZAR
-        function saveService(e) {
-            e.preventDefault();
-            const id = document.getElementById('serviceId').value;
-            const title = document.getElementById('svcTitle').value;
-            const desc = document.getElementById('svcDesc').value;
-            const icon = document.getElementById('svcIcon').value;
-            
-            let services = getServices();
+const DS=[
+  {id:1,title:'Derecho Penal',desc:'Defensa experta y estratégica en procesos penales.',icon:'⚖'},
+  {id:2,title:'Derecho Corporativo',desc:'Asesoría integral para empresas: constitución, contratos, fusiones.',icon:'🏛'},
+  {id:3,title:'Derecho Familiar',desc:'Divorcios, custodia, herencias y pensiones alimenticias.',icon:'👨‍👩‍👧'},
+  {id:4,title:'Derecho Laboral',desc:'Representación en conflictos laborales y despidos injustificados.',icon:'🤝'},
+  {id:5,title:'Derecho Civil',desc:'Contratos, bienes inmuebles y responsabilidad civil.',icon:'📄'},
+  {id:6,title:'Derecho Administrativo',desc:'Amparo, recursos administrativos y defensa ante autoridades.',icon:'⚖'},
+];
+const DT=[
+  {id:1,name:'Lic. Alejandro Reyes',role:'Socio Director',bio:'Especialista en derecho penal y corporativo con 20+ años en litigios de alto perfil.',initials:'AR'},
+  {id:2,name:'Lic. Carmen Vidal',role:'Socia Fundadora',bio:'Experta en derecho familiar y civil.',initials:'CV'},
+  {id:3,name:'Lic. Diego Montoya',role:'Abogado Senior',bio:'Derecho corporativo y contratos internacionales. MBA por el ITAM.',initials:'DM'},
+  {id:4,name:'Lic. Sofía Herrera',role:'Abogada Laboral',bio:'Defensora de derechos laborales con amplia experiencia en litigios.',initials:'SH'},
+];
+const DTT=[
+  {id:1,text:'Consorcio Legal me ayudó a ganar un caso que todos daban por perdido.',author:'Roberto M.',company:'Empresario, CDMX'},
+  {id:2,text:'Su equipo fue mi mayor apoyo durante mi divorcio. Profesionales y empáticos.',author:'Gabriela T.',company:'Cliente, Monterrey'},
+  {id:3,text:'La mejor inversión para mi empresa. Resolvieron en semanas lo que otros no lograron en años.',author:'Ing. Carlos R.',company:'Director General'},
+];
+const DSET={firmName:'Consorcio Legal',tagline:'Excelencia jurídica con compromiso humano.',location:'Torre Legal, Piso 12, Ciudad de México',phone:'+52 55 1234 5678',email:'contacto@consorcioleqal.mx',whatsapp:'525512345678',fbUrl:'#',igUrl:'#',liUrl:'#',adminPass:btoa('consorcio2025')};
 
-            if(id !== "") {
-                // Editar existente
-                services[id] = { title, desc, icon };
-                alert("Servicio actualizado correctamente");
-            } else {
-                // Agregar nuevo
-                services.push({ title, desc, icon });
-                alert("Servicio agregado");
-            }
+// ═══════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════
+function doLogin(){
+  const p=document.getElementById('lp').value;
+  const st=lg(SK.st,DSET);
+  if(btoa(p)===st.adminPass){
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='flex';
+    checkMobMenu();
+    renderDash();
+    updateMsgBadge();
+    // Session timeout: 4 hours
+    setTimeout(doLogout, 4*60*60*1000);
+  } else {
+    const e=document.getElementById('lerr');e.style.display='block';
+    setTimeout(()=>e.style.display='none',3500);
+  }
+}
+function doLogout(){location.reload();}
+document.getElementById('lp').addEventListener('keydown',e=>{ if(e.key==='Enter')doLogin(); });
 
-            saveServices(services);
-            resetForm();
-        }
+// ═══════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════
+const TITLES={dash:'Dashboard',msgs:'Mensajes',svcs:'Servicios',team:'Equipo',test:'Testimonios',set:'Configuración',sec:'Seguridad'};
+const RENDERS={dash:renderDash,msgs:renderMsgs,svcs:renderSvcs,team:renderTeam,test:renderTest,set:loadSettings,sec:()=>{}};
 
-        // 5. ELIMINAR
-        function deleteService(index) {
-            if(confirm("¿Estás seguro de eliminar este servicio?")) {
-                let services = getServices();
-                services.splice(index, 1);
-                saveServices(services);
-            }
-        }
+function go(id, btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('a'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('a'));
+  const s=document.getElementById('s-'+id);if(s)s.classList.add('a');
+  if(btn)btn.classList.add('a');
+  else{document.querySelectorAll('.nb').forEach(b=>{if(b.textContent.trim().toLowerCase().includes(TITLES[id]?.split(' ')[0]?.toLowerCase()))b.classList.add('a');});}
+  document.getElementById('tb-title').textContent=TITLES[id]||id;
+  closeMobSb();
+  if(RENDERS[id])RENDERS[id]();
+}
 
-        // 6. PREPARAR EDICIÓN
-        function editService(index) {
-            let services = getServices();
-            const svc = services[index];
+// ═══════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════
+let _tt;
+function toast(msg,type='s'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='show'+(type==='e'?' err':type==='o'?' ok':'');
+  clearTimeout(_tt);_tt=setTimeout(()=>t.className='',3200);
+}
 
-            document.getElementById('serviceId').value = index;
-            document.getElementById('svcTitle').value = svc.title;
-            document.getElementById('svcDesc').value = svc.desc;
-            document.getElementById('svcIcon').value = svc.icon;
+// ═══════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════
+function openModal(title,body,foot){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('modal-foot').innerHTML=foot||'';
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show');}
 
-            document.getElementById('btnSave').innerText = "Actualizar";
-            document.getElementById('btnSave').classList.remove('btn-success');
-            document.getElementById('btnSave').classList.add('btn-primary');
-            document.getElementById('btnCancel').style.display = 'block';
-        }
+// ═══════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════
+function renderDash(){
+  const msgs=lg(SK.ms,[]);const svcs=lg(SK.sv,DS);const tm=lg(SK.tm,DT);
+  const unread=msgs.filter(m=>!m.read).length;
+  document.getElementById('kd-msgs').textContent=unread;
+  document.getElementById('kd-total').textContent=msgs.length;
+  document.getElementById('kd-svcs').textContent=svcs.length;
+  document.getElementById('kd-team').textContent=tm.length;
+  const last=msgs.slice(0,5);
+  document.getElementById('dash-msgs-list').innerHTML=last.length
+    ?last.map(m=>`<div class="msg-card${!m.read?' unread':''}" onclick="viewMsg('${m.id}')">
+      <div class="msg-name">${m.name} <span class="badge ${!m.read?'bg-new':'bg-read'}">${!m.read?'Nuevo':'Leído'}</span></div>
+      <div class="msg-area">${m.area||'Sin área'}</div>
+      <div class="msg-preview">${m.message}</div>
+      <div class="msg-date">${fmtDate(m.date)}</div>
+    </div>`).join('')
+    :`<div class="empty-state"><div class="empty-icon">✉️</div><div class="empty-text">Sin mensajes aún</div></div>`;
+}
 
-        function resetForm() {
-            document.getElementById('serviceForm').reset();
-            document.getElementById('serviceId').value = "";
-            document.getElementById('btnSave').innerText = "Agregar Servicio";
-            document.getElementById('btnSave').classList.add('btn-success');
-            document.getElementById('btnSave').classList.remove('btn-primary');
-            document.getElementById('btnCancel').style.display = 'none';
-        }
-    </script>
+// ═══════════════════════════════════════════════
+//  MENSAJES
+// ═══════════════════════════════════════════════
+function renderMsgs(){
+  const msgs=lg(SK.ms,[]);
+  document.getElementById('msgs-list').innerHTML=msgs.length
+    ?msgs.map(m=>`<div class="msg-card${!m.read?' unread':''}" onclick="viewMsg('${m.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="msg-name">${m.name}</div>
+        <span class="badge ${!m.read?'bg-new':'bg-read'}">${!m.read?'Nuevo':'Leído'}</span>
+      </div>
+      <div class="msg-area">${m.area||'Sin área especificada'}</div>
+      <div class="msg-preview">${m.message}</div>
+      <div class="msg-date">${fmtDate(m.date)} · ${m.email||'Sin correo'} · ${m.phone||'Sin teléfono'}</div>
+    </div>`).join('')
+    :`<div class="empty-state"><div class="empty-icon">✉️</div><div class="empty-text">Bandeja vacía</div></div>`;
+}
+
+function viewMsg(id){
+  const msgs=lg(SK.ms,[]);const m=msgs.find(x=>String(x.id)===String(id));if(!m)return;
+  m.read=true;ls(SK.ms,msgs);updateMsgBadge();
+  openModal(`Mensaje de ${m.name}`,`
+    <div style="font-size:13px;line-height:1.7">
+      <p style="margin-bottom:8px"><strong>Nombre:</strong> ${m.name}</p>
+      <p style="margin-bottom:8px"><strong>Correo:</strong> ${m.email||'—'}</p>
+      <p style="margin-bottom:8px"><strong>Teléfono:</strong> ${m.phone||'—'}</p>
+      <p style="margin-bottom:8px"><strong>Área:</strong> ${m.area||'—'}</p>
+      <p style="margin-bottom:8px"><strong>Fecha:</strong> ${fmtDate(m.date)}</p>
+      <hr style="border-color:var(--border);margin:14px 0">
+      <p><strong>Mensaje:</strong><br><span style="color:var(--ivory2)">${m.message}</span></p>
+    </div>`,
+    `<button class="btn-d btn-sm" onclick="deleteMsg('${m.id}');closeModal()">🗑 Eliminar</button>
+     <a href="https://wa.me/${m.phone?.replace(/\D/g,'')||''}" target="_blank" class="btn-g btn-sm" style="text-decoration:none">📱 WhatsApp</a>`
+  );
+}
+
+function deleteMsg(id){const msgs=lg(SK.ms,[]).filter(m=>String(m.id)!==String(id));ls(SK.ms,msgs);renderMsgs();updateMsgBadge();toast('Mensaje eliminado');}
+function markAllRead(){const msgs=lg(SK.ms,[]);msgs.forEach(m=>m.read=true);ls(SK.ms,msgs);renderMsgs();updateMsgBadge();toast('Todos marcados como leídos','o');}
+function clearAllMsgs(){if(!confirm('¿Eliminar todos los mensajes?'))return;ls(SK.ms,[]);renderMsgs();updateMsgBadge();toast('Bandeja limpiada');}
+function updateMsgBadge(){const n=lg(SK.ms,[]).filter(m=>!m.read).length;const b=document.getElementById('msg-badge');b.textContent=n;b.style.display=n>0?'inline':'none';}
+
+// ═══════════════════════════════════════════════
+//  SERVICIOS
+// ═══════════════════════════════════════════════
+function renderSvcs(){
+  const sv=lg(SK.sv,DS);
+  document.getElementById('svcs-tbody').innerHTML=sv.length
+    ?sv.map((s,i)=>`<tr>
+      <td style="font-size:22px">${s.icon||'⚖'}</td>
+      <td><strong>${s.title}</strong></td>
+      <td style="color:var(--ivory2);font-size:12px">${s.desc}</td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn-s btn-sm" onclick="openSvcModal(${i})">✏</button>
+        <button class="btn-d btn-sm" onclick="deleteSvc(${i})">🗑</button>
+      </div></td>
+    </tr>`).join('')
+    :'<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--gray2)">Sin servicios</td></tr>';
+}
+
+function openSvcModal(idx){
+  const sv=lg(SK.sv,DS);
+  const s=idx!==undefined?sv[idx]:{id:Date.now(),title:'',desc:'',icon:'⚖'};
+  openModal(idx!==undefined?'Editar Servicio':'Nuevo Servicio',`
+    <div class="fg"><label class="fl">Emoji / Ícono</label><input class="fi" id="m-icon" value="${s.icon||'⚖'}" placeholder="⚖ 🏛 📄 🤝"></div>
+    <div class="fg"><label class="fl">Título del servicio</label><input class="fi" id="m-title" value="${s.title}" placeholder="Ej: Derecho Penal"></div>
+    <div class="fg"><label class="fl">Descripción</label><textarea class="fi" id="m-desc" rows="3" placeholder="Breve descripción...">${s.desc}</textarea></div>`,
+    `<button class="btn-s" onclick="closeModal()">Cancelar</button>
+     <button class="btn-g" onclick="saveSvc(${idx!==undefined?idx:'null'})">✓ Guardar</button>`
+  );
+}
+
+function saveSvc(idx){
+  const title=document.getElementById('m-title').value.trim();
+  const desc=document.getElementById('m-desc').value.trim();
+  const icon=document.getElementById('m-icon').value.trim();
+  if(!title){toast('El título es obligatorio','e');return;}
+  const sv=lg(SK.sv,DS);
+  if(idx!==null&&idx!==undefined)sv[idx]={...sv[idx],title,desc,icon};
+  else sv.push({id:Date.now(),title,desc,icon});
+  ls(SK.sv,sv);closeModal();renderSvcs();toast('Servicio guardado','o');
+}
+
+function deleteSvc(i){if(!confirm('¿Eliminar este servicio?'))return;const sv=lg(SK.sv,DS);sv.splice(i,1);ls(SK.sv,sv);renderSvcs();toast('Servicio eliminado');}
+function resetSvcs(){if(!confirm('¿Restaurar servicios por defecto?'))return;ls(SK.sv,DS);renderSvcs();toast('Servicios restaurados','o');}
+
+// ═══════════════════════════════════════════════
+//  EQUIPO
+// ═══════════════════════════════════════════════
+function renderTeam(){
+  const tm=lg(SK.tm,DT);
+  document.getElementById('team-tbody').innerHTML=tm.length
+    ?tm.map((m,i)=>`<tr>
+      <td><div style="width:38px;height:38px;border-radius:50%;background:var(--ink3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:14px;font-weight:600;color:var(--gold)">${m.initials}</div></td>
+      <td><strong>${m.name}</strong></td>
+      <td><span class="badge bg-role">${m.role}</span></td>
+      <td style="color:var(--ivory2);font-size:12px;max-width:260px">${m.bio}</td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn-s btn-sm" onclick="openTeamModal(${i})">✏</button>
+        <button class="btn-d btn-sm" onclick="deleteTeam(${i})">🗑</button>
+      </div></td>
+    </tr>`).join('')
+    :'<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--gray2)">Sin miembros</td></tr>';
+}
+
+function openTeamModal(idx){
+  const tm=lg(SK.tm,DT);
+  const m=idx!==undefined?tm[idx]:{id:Date.now(),name:'',role:'',bio:'',initials:''};
+  openModal(idx!==undefined?'Editar Miembro':'Nuevo Miembro',`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label class="fl">Nombre completo</label><input class="fi" id="m-name" value="${m.name}" placeholder="Lic. Nombre Apellido"></div>
+      <div class="fg"><label class="fl">Iniciales (2 letras)</label><input class="fi" id="m-init" value="${m.initials}" maxlength="2" placeholder="AB" style="text-transform:uppercase"></div>
+    </div>
+    <div class="fg"><label class="fl">Cargo</label><input class="fi" id="m-role" value="${m.role}" placeholder="Socio Director"></div>
+    <div class="fg"><label class="fl">Biografía breve</label><textarea class="fi" id="m-bio" rows="3">${m.bio}</textarea></div>`,
+    `<button class="btn-s" onclick="closeModal()">Cancelar</button>
+     <button class="btn-g" onclick="saveTeam(${idx!==undefined?idx:'null'})">✓ Guardar</button>`
+  );
+}
+
+function saveTeam(idx){
+  const name=document.getElementById('m-name').value.trim();
+  const role=document.getElementById('m-role').value.trim();
+  const bio=document.getElementById('m-bio').value.trim();
+  const initials=document.getElementById('m-init').value.trim().toUpperCase();
+  if(!name||!role){toast('Nombre y cargo son obligatorios','e');return;}
+  const tm=lg(SK.tm,DT);
+  if(idx!==null&&idx!==undefined)tm[idx]={...tm[idx],name,role,bio,initials};
+  else tm.push({id:Date.now(),name,role,bio,initials:initials||name.split(' ').map(n=>n[0]).join('').substring(0,2)});
+  ls(SK.tm,tm);closeModal();renderTeam();toast('Miembro guardado','o');
+}
+
+function deleteTeam(i){if(!confirm('¿Eliminar este miembro?'))return;const tm=lg(SK.tm,DT);tm.splice(i,1);ls(SK.tm,tm);renderTeam();toast('Miembro eliminado');}
+
+// ═══════════════════════════════════════════════
+//  TESTIMONIOS
+// ═══════════════════════════════════════════════
+function renderTest(){
+  const tt=lg(SK.ts,DTT);
+  document.getElementById('test-tbody').innerHTML=tt.length
+    ?tt.map((t,i)=>`<tr>
+      <td style="font-size:12px;color:var(--ivory2);max-width:340px;font-style:italic">"${t.text.substring(0,100)}..."</td>
+      <td><strong>${t.author}</strong></td>
+      <td style="color:var(--gold3);font-size:12px">${t.company}</td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn-s btn-sm" onclick="openTestModal(${i})">✏</button>
+        <button class="btn-d btn-sm" onclick="deleteTest(${i})">🗑</button>
+      </div></td>
+    </tr>`).join('')
+    :'<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--gray2)">Sin testimonios</td></tr>';
+}
+
+function openTestModal(idx){
+  const tt=lg(SK.ts,DTT);
+  const t=idx!==undefined?tt[idx]:{id:Date.now(),text:'',author:'',company:''};
+  openModal(idx!==undefined?'Editar Testimonio':'Nuevo Testimonio',`
+    <div class="fg"><label class="fl">Testimonio</label><textarea class="fi" id="m-text" rows="4" placeholder="Texto del testimonio...">${t.text}</textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label class="fl">Nombre del cliente</label><input class="fi" id="m-auth" value="${t.author}" placeholder="Juan García"></div>
+      <div class="fg"><label class="fl">Empresa / Ciudad</label><input class="fi" id="m-comp" value="${t.company}" placeholder="Empresario, CDMX"></div>
+    </div>`,
+    `<button class="btn-s" onclick="closeModal()">Cancelar</button>
+     <button class="btn-g" onclick="saveTest(${idx!==undefined?idx:'null'})">✓ Guardar</button>`
+  );
+}
+
+function saveTest(idx){
+  const text=document.getElementById('m-text').value.trim();
+  const author=document.getElementById('m-auth').value.trim();
+  const company=document.getElementById('m-comp').value.trim();
+  if(!text||!author){toast('Testimonio y autor son obligatorios','e');return;}
+  const tt=lg(SK.ts,DTT);
+  if(idx!==null&&idx!==undefined)tt[idx]={...tt[idx],text,author,company};
+  else tt.push({id:Date.now(),text,author,company});
+  ls(SK.ts,tt);closeModal();renderTest();toast('Testimonio guardado','o');
+}
+
+function deleteTest(i){if(!confirm('¿Eliminar este testimonio?'))return;const tt=lg(SK.ts,DTT);tt.splice(i,1);ls(SK.ts,tt);renderTest();toast('Testimonio eliminado');}
+
+// ═══════════════════════════════════════════════
+//  CONFIGURACIÓN
+// ═══════════════════════════════════════════════
+function loadSettings(){
+  const st=lg(SK.st,DSET);
+  const sv=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
+  sv('s-name',st.firmName);sv('s-tagline',st.tagline);sv('s-loc',st.location);
+  sv('s-phone',st.phone);sv('s-email',st.email);sv('s-wa',st.whatsapp);
+  sv('s-fb',st.fbUrl);sv('s-ig',st.igUrl);sv('s-li',st.liUrl);
+  sv('s-about',st.about||'');
+}
+
+function saveSettings(){
+  const st=lg(SK.st,DSET);
+  const gv=id=>{const e=document.getElementById(id);return e?e.value.trim():'';};
+  const updated={...st,firmName:gv('s-name'),tagline:gv('s-tagline'),location:gv('s-loc'),phone:gv('s-phone'),email:gv('s-email'),whatsapp:gv('s-wa'),fbUrl:gv('s-fb'),igUrl:gv('s-ig'),liUrl:gv('s-li'),about:gv('s-about')};
+  ls(SK.st,updated);
+  toast('Configuración guardada correctamente','o');
+}
+
+function setTab(id,btn){
+  document.querySelectorAll('.set-panel').forEach(p=>p.classList.remove('a'));
+  document.querySelectorAll('.set-tab').forEach(b=>b.classList.remove('a'));
+  document.getElementById('st-'+id).classList.add('a');
+  if(btn)btn.classList.add('a');
+}
+
+// ═══════════════════════════════════════════════
+//  SEGURIDAD
+// ═══════════════════════════════════════════════
+function changePass(){
+  const cur=document.getElementById('sec-cur').value;
+  const nw=document.getElementById('sec-new').value;
+  const con=document.getElementById('sec-con').value;
+  const msg=document.getElementById('sec-msg');
+  const st=lg(SK.st,DSET);
+  if(btoa(cur)!==st.adminPass){msg.textContent='La contraseña actual es incorrecta.';msg.style.color='var(--red)';msg.style.display='block';return;}
+  if(nw.length<6){msg.textContent='La nueva contraseña debe tener al menos 6 caracteres.';msg.style.color='var(--red)';msg.style.display='block';return;}
+  if(nw!==con){msg.textContent='Las contraseñas no coinciden.';msg.style.color='var(--red)';msg.style.display='block';return;}
+  ls(SK.st,{...st,adminPass:btoa(nw)});
+  ['sec-cur','sec-new','sec-con'].forEach(id=>document.getElementById(id).value='');
+  msg.textContent='✓ Contraseña actualizada correctamente.';msg.style.color='var(--green)';msg.style.display='block';
+  setTimeout(()=>msg.style.display='none',4000);
+  toast('Contraseña actualizada','o');
+}
+
+function dangerClearMsgs(){
+  const w=prompt('Escribe CONFIRMAR para borrar todos los mensajes:');
+  if(w==='CONFIRMAR'){ls(SK.ms,[]);toast('Mensajes borrados');updateMsgBadge();}
+}
+
+function dangerResetAll(){
+  const w=prompt('Escribe RESETEAR para restaurar todo el contenido por defecto:');
+  if(w==='RESETEAR'){ls(SK.sv,DS);ls(SK.tm,DT);ls(SK.ts,DTT);ls(SK.ms,[]);toast('Contenido restaurado','o');renderDash();updateMsgBadge();}
+}
+
+// ═══════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════
+function fmtDate(iso){try{return new Date(iso).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch{return iso;}}
+
+// Mobile sidebar
+function checkMobMenu(){if(window.innerWidth<=768)document.getElementById('mob-menu-btn').style.display='block';}
+function toggleMobSb(){document.getElementById('sb').classList.toggle('mob-open');document.getElementById('mob-ov').classList.toggle('show');}
+function closeMobSb(){document.getElementById('sb').classList.remove('mob-open');document.getElementById('mob-ov').classList.remove('show');}
+
+window.addEventListener('resize',checkMobMenu);
+</script>
 </body>
 </html>
